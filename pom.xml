@@ -1,20 +1,26 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
     <groupId>com.filmon.maven</groupId>
     <artifactId>image-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>1.0-1</version>
+    <version>1.1-SNAPSHOT</version>
 
     <name>Image Maven Mojo</name>
     <description>Provide image thumbnails generating as maven goal</description>
     <url>https://github.com/zayass/image-maven-plugin</url>
 
     <scm>
-        <url>http://github.com/zayass/image-maven-plugin/tree/master</url>
-        <connection>scm:git:git://github.com/zayass/image-maven-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/zayass/image-maven-plugin.git</developerConnection>
-        <tag>HEAD</tag>
+        <connection>scm:git:git@github.com:zayass/image-maven-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:zayass/image-maven-plugin.git</developerConnection>
+        <url>git@github.com:zayass/image-maven-plugin.git</url>
     </scm>
 
     <developers>
