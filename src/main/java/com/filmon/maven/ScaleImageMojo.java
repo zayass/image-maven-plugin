@@ -55,8 +55,7 @@ public class ScaleImageMojo extends AbstractMojo {
             }
 
             if (!input.exists()) {
-                log.error(String.format("Input file %s does not exists", input));
-                continue;
+                throw new MojoExecutionException(String.format("Input file %s does not exists", input));
             }
 
             if (output.exists()) {
@@ -64,40 +63,110 @@ public class ScaleImageMojo extends AbstractMojo {
                 continue;
             }
 
-            try {
-                BufferedImage image = ImageIO.read(input);
-                BufferedImage thumbnail = Scalr.resize(
-                        image,
-                        Scalr.Method.ULTRA_QUALITY,
-                        imageDefinition.getWidth()
-                );
+            final Integer width = imageDefinition.getWidth();
 
-                ImageReader inputReader = getImageReader(input);
-                String format = inputReader.getFormatName();
+            final BufferedImage thumbnail = Scalr.resize(
+                    getInputImage(input),
+                    Scalr.Method.ULTRA_QUALITY,
+                    width
+            );
 
-                ImageIO.write(thumbnail, format, output);
+            writeImage(thumbnail, getFormatName(input), output);
 
-                log.info(String.format("%s:%s generated", output, imageDefinition.getWidth()));
-            } catch (IOException e) {
-                log.error(input.toString());
-                log.error(e);
-            }
+            log.info(String.format("%s:%s generated", output, width));
         }
     }
 
-    private ImageReader getImageReader(final File file) {
+    private String getFormatName(final File file) throws MojoExecutionException {
+        final ImageInputStream imageStream = getInputStream(file);
+
+        final Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(imageStream);
+
+        if (!imageReaders.hasNext()) {
+            closeStream(imageStream);
+            throw notAnImage(file);
+        }
+
+        final ImageReader imageReader = imageReaders.next();
+
+        try {
+            return imageReader.getFormatName();
+        } catch (IOException e) {
+            throw notAnImage(file);
+        } finally {
+            closeStream(imageStream);
+            imageReader.dispose();
+        }
+    }
+
+    private ImageInputStream getInputStream(final File file) throws MojoExecutionException {
         final ImageInputStream imageStream;
         try {
             imageStream = ImageIO.createImageInputStream(file);
         } catch (IOException e) {
-            return null;
+            throw readFailed(file);
         }
 
-        final Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(imageStream);
-        if (!imageReaders.hasNext()) {
-            return null;
+        if (imageStream == null) {
+            throw notAnImage(file);
+        }
+        return imageStream;
+    }
+
+    private void closeStream(final ImageInputStream imageStream) {
+        try {
+            imageStream.close();
+        } catch (IOException ignored) {
+        }
+    }
+
+    private void writeImage(final BufferedImage thumbnail, final String format, final File output) throws MojoExecutionException {
+        if (output.exists() && !output.canWrite()) {
+            throw writeFailed(output);
         }
 
-        return imageReaders.next();
+        final File dir = output.getParentFile();
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw writeFailed(output);
+        }
+
+        try {
+            ImageIO.write(thumbnail, format, output);
+        } catch (IOException e) {
+            throw writeFailed(output);
+        } catch (NullPointerException e) {
+            throw writeFailed(output);
+        }
+    }
+
+    private BufferedImage getInputImage(final File file) throws MojoExecutionException {
+        if (!file.canRead()) {
+            throw readFailed(file);
+        }
+
+        try {
+            return ImageIO.read(file);
+        } catch (IOException e) {
+            throw notAnImage(file);
+        }
+    }
+
+    private MojoExecutionException readFailed(final File file) {
+        return new MojoExecutionException(String.format(
+                "Cannot read input file %s", file.getAbsolutePath()
+        ));
+    }
+
+    private MojoExecutionException writeFailed(final File file) {
+        return new MojoExecutionException(String.format(
+                "Cannot write output file %s",
+                file.getAbsolutePath()
+        ));
+    }
+
+    private MojoExecutionException notAnImage(final File file) {
+        return new MojoExecutionException(String.format(
+                "input file %s not an image/unknown format", file.getAbsolutePath()
+        ));
     }
 }
