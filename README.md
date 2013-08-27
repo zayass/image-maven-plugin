@@ -12,7 +12,7 @@ Usage
             ...
             <plugin>
                 <groupId>com.filmon.maven</groupId>
-                <artifactId>maven-image-plugin</artifactId>
+                <artifactId>image-maven-plugin</artifactId>
                 <version>1.0</version>
                 <executions>
                     <execution>
