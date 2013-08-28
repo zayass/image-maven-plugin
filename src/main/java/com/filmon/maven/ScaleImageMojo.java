@@ -55,11 +55,11 @@ public class ScaleImageMojo extends AbstractMojo {
             }
 
             if (!input.exists()) {
-                throw new MojoExecutionException(String.format("Input file %s does not exists", input));
+                throw new MojoExecutionException(String.format("Input file %s does not exists", input.getAbsolutePath()));
             }
 
             if (output.exists()) {
-                log.info(String.format("Output file %s skipped because it already exists",  output));
+                log.info(String.format("Output file %s skipped because it already exists",  output.getAbsolutePath()));
                 continue;
             }
 
