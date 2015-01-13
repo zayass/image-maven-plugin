@@ -65,11 +65,22 @@ public class ScaleImageMojo extends AbstractMojo {
 
             final Integer width = imageDefinition.getWidth();
 
-            final BufferedImage thumbnail = Scalr.resize(
+            BufferedImage thumbnail = Scalr.resize(
                     getInputImage(input),
                     Scalr.Method.ULTRA_QUALITY,
                     width
             );
+            final Integer cropHeight = imageDefinition.getCropHeight();
+            final Integer cropWidth = imageDefinition.getCropWidth();
+            if (cropHeight != null && cropWidth != null) {
+                int max = Math.max(cropHeight, cropWidth);
+                if (max > width) {
+                    thumbnail = Scalr.pad(thumbnail, (max - width) / 2);
+                }
+                int x = (max - cropWidth) / 2;
+                int y = (max - cropHeight) / 2;
+                thumbnail = Scalr.crop(thumbnail, x, y, cropWidth, cropHeight);
+            }
 
             writeImage(thumbnail, getFormatName(input), output);
 
