@@ -55,5 +55,9 @@ Usage
         <width>240</width>
         <cropWidth>640</cropWidth>
         <cropHeight>960</cropHeight>
+        <color>black</code>
     </image>
 
+    The color can be specified by name of one fields of java.awt.Color,
+    or by integer value: <color>0xffff00</color> is the same as
+    <color>yellow</color>.

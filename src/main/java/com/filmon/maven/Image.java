@@ -1,6 +1,9 @@
 package com.filmon.maven;
 
+import java.awt.Color;
 import java.io.File;
+import java.lang.reflect.Field;
+import org.apache.maven.plugin.MojoExecutionException;
 
 public class Image {
     private File source;
@@ -8,6 +11,7 @@ public class Image {
     private int width;
     private Integer cropWidth;
     private Integer cropHeight;
+    private String color;
 
     public File getSource() {
         return source;
@@ -39,10 +43,27 @@ public class Image {
     public void setCropHeight(Integer height) {
         this.cropHeight = height;
     }
+    public void setColor(String color) {
+        this.color = color;
+    }
     Integer getCropWidth() {
         return cropWidth;
     }
     Integer getCropHeight() {
         return cropHeight;
+    }
+    Color getColor() throws MojoExecutionException {
+        if (color == null) return null;
+        try {
+            Field f = Color.class.getField(color);
+            return (Color) f.get(null);
+        } catch (Exception ex) {
+            // ignore
+        }
+        try {
+            return Color.decode(color);
+        } catch (NumberFormatException ex) {
+            throw new MojoExecutionException("Does not represent color: " + color, ex);
+        }
     }
 }
