@@ -44,3 +44,20 @@ Usage
             ...
         </plugins>
     </build>
+
+    In addition to scaling, it is possible to add black padding around images 
+    and crop them to specified size. Useful to when generating initial 
+    image for iPhone or iPad:
+
+    <image>
+        <source>src/main/icons/launcher.png</source>
+        <destination>Default@2x.png</destination>
+        <width>240</width>
+        <cropWidth>640</cropWidth>
+        <cropHeight>960</cropHeight>
+        <color>black</code>
+    </image>
+
+    The color can be specified by name of one fields of java.awt.Color,
+    or by integer value: <color>0xffff00</color> is the same as
+    <color>yellow</color>.

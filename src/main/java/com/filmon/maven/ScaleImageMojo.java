@@ -1,5 +1,6 @@
 package com.filmon.maven;
 
+import java.awt.Color;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -65,11 +66,27 @@ public class ScaleImageMojo extends AbstractMojo {
 
             final Integer width = imageDefinition.getWidth();
 
-            final BufferedImage thumbnail = Scalr.resize(
+            BufferedImage thumbnail = Scalr.resize(
                     getInputImage(input),
                     Scalr.Method.ULTRA_QUALITY,
                     width
             );
+            final Integer cropHeight = imageDefinition.getCropHeight();
+            final Integer cropWidth = imageDefinition.getCropWidth();
+            if (cropHeight != null && cropWidth != null) {
+                int max = Math.max(cropHeight, cropWidth);
+                if (max > width) {
+                    final Color color = imageDefinition.getColor();
+                    if (color == null) {
+                        thumbnail = Scalr.pad(thumbnail, (max - width) / 2);
+                    } else {
+                        thumbnail = Scalr.pad(thumbnail, (max - width) / 2, color);
+                    }
+                }
+                int x = (max - cropWidth) / 2;
+                int y = (max - cropHeight) / 2;
+                thumbnail = Scalr.crop(thumbnail, x, y, cropWidth, cropHeight);
+            }
 
             writeImage(thumbnail, getFormatName(input), output);
 
