@@ -13,7 +13,7 @@ Usage
             <plugin>
                 <groupId>com.filmon.maven</groupId>
                 <artifactId>image-maven-plugin</artifactId>
-                <version>1.1</version>
+                <version>1.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -55,7 +55,7 @@ Usage
         <width>240</width>
         <cropWidth>640</cropWidth>
         <cropHeight>960</cropHeight>
-        <color>black</code>
+        <color>black</color>
     </image>
 
     The color can be specified by name of one fields of java.awt.Color,
