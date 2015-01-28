@@ -49,6 +49,11 @@ Usage
     and crop them to specified size. Useful to when generating initial 
     image for iPhone or iPad:
 
+    <goals>
+        <goal>scale</goal>
+        <goal>crop</goal>
+    </goals>
+    ...
     <image>
         <source>src/main/icons/launcher.png</source>
         <destination>Default@2x.png</destination>

@@ -1,5 +1,6 @@
 package com.filmon.maven;
 
+import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -13,27 +14,19 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-public abstract class AbstractImageMojo extends org.apache.maven.plugin.AbstractMojo {
+public abstract class AbstractImageMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
     private File outputDirectory;
     @Parameter(required = false)
     private List<Image> images;
 
 
-    public File getOutputDirectory() {
+    protected File getOutputDirectory() {
         return outputDirectory;
     }
 
-    public void setOutputDirectory(final File outputDirectory) {
-        this.outputDirectory = outputDirectory;
-    }
-
-    public List<Image> getImages() {
+    protected List<Image> getImages() {
         return images;
-    }
-
-    public void setImages(final List<Image> images) {
-        this.images = images;
     }
 
     protected abstract BufferedImage processImage(Image imageDefinition, BufferedImage inputImage) throws MojoExecutionException;
@@ -46,7 +39,6 @@ public abstract class AbstractImageMojo extends org.apache.maven.plugin.Abstract
     }
 
     private void processImageInternal(Image imageDefinition) throws MojoExecutionException {
-        final File input = imageDefinition.getSource();
         final String destination = imageDefinition.getDestination();
         final Integer width = imageDefinition.getWidth();
 
@@ -56,22 +48,36 @@ public abstract class AbstractImageMojo extends org.apache.maven.plugin.Abstract
             output = new File(getOutputDirectory(), destination);
         }
 
-        if (!input.exists()) {
-            throw new MojoExecutionException(String.format("Input file %s does not exists", input.getAbsolutePath()));
-        }
-
-        if (output.exists()) {
-            getLog().info(String.format("Output file %s skipped because it already exists", output.getAbsolutePath()));
+        ProcessingChain processingChain = ProcessingChain.getInstance(getPluginContext());
+        
+        if (isFresh(output, imageDefinition)) {
+            getLog().info(String.format("Output file %s skipped because it is fresh", output.getAbsolutePath()));
             return;
         }
 
+        final File input = !processingChain.isInQueue(imageDefinition) ? 
+                imageDefinition.getSource() : output;
+
+        
         BufferedImage thumbnail = processImage(imageDefinition, getInputImage(input));
         writeImage(thumbnail, getFormatName(input), output);
+        
+        processingChain.enqueue(imageDefinition);
+        
         getLog().info(String.format("%s:%s generated", output, width));
+    }
+
+    private boolean isFresh(File output, Image imageDefinition) {
+        return output.exists() && 
+                !ProcessingChain.getInstance(getPluginContext()).isInQueue(imageDefinition);
     }
 
 
     private BufferedImage getInputImage(final File file) throws MojoExecutionException {
+        if (!file.exists()) {
+            throw new MojoExecutionException(String.format("Input file %s does not exists", file.getAbsolutePath()));
+        }
+        
         if (!file.canRead()) {
             throw readFailed(file);
         }
