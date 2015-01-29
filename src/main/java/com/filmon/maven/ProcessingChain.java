@@ -3,24 +3,10 @@ package com.filmon.maven;
 import java.util.Map;
 
 public class ProcessingChain {
-    private static volatile ProcessingChain instance = null;
-    
     private Map pluginContext;
 
     public ProcessingChain(Map pluginContext) {
         this.pluginContext = pluginContext;
-    }
-
-    public static ProcessingChain getInstance(Map pluginContext) {
-        if (instance == null) {
-            synchronized (ProcessingChain.class) {
-                if (instance == null) {
-                    instance = new ProcessingChain(pluginContext);
-                }
-            }
-        }
-        
-        return instance;
     }
 
     @SuppressWarnings("unchecked")

@@ -15,11 +15,12 @@ import java.util.Iterator;
 import java.util.List;
 
 public abstract class AbstractImageMojo extends AbstractMojo {
+    private ProcessingChain processingChain;
+    
     @Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
     private File outputDirectory;
     @Parameter(required = false)
     private List<Image> images;
-
 
     protected File getOutputDirectory() {
         return outputDirectory;
@@ -33,6 +34,8 @@ public abstract class AbstractImageMojo extends AbstractMojo {
 
     @Override
     public final void execute() throws MojoExecutionException, MojoFailureException {
+        processingChain = new ProcessingChain(getPluginContext());
+        
         for (Image imageDefinition : getImages()) {
             processImageInternal(imageDefinition);
         }
@@ -48,8 +51,6 @@ public abstract class AbstractImageMojo extends AbstractMojo {
             output = new File(getOutputDirectory(), destination);
         }
 
-        ProcessingChain processingChain = ProcessingChain.getInstance(getPluginContext());
-        
         if (isFresh(output, imageDefinition)) {
             getLog().info(String.format("Output file %s skipped because it is fresh", output.getAbsolutePath()));
             return;
@@ -69,7 +70,7 @@ public abstract class AbstractImageMojo extends AbstractMojo {
 
     private boolean isFresh(File output, Image imageDefinition) {
         return output.exists() && 
-                !ProcessingChain.getInstance(getPluginContext()).isInQueue(imageDefinition);
+                !processingChain.isInQueue(imageDefinition);
     }
 
 
