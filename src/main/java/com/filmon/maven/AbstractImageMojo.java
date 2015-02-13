@@ -51,26 +51,31 @@ public abstract class AbstractImageMojo extends AbstractMojo {
             output = new File(getOutputDirectory(), destination);
         }
 
-        if (isFresh(output, imageDefinition)) {
+        if (isFresh(output)) {
             getLog().info(String.format("Output file %s skipped because it is fresh", output.getAbsolutePath()));
             return;
         }
 
-        final File input = !processingChain.isInQueue(imageDefinition) ? 
+        final File input = !processingChain.isInQueue(output) ?
                 imageDefinition.getSource() : output;
 
+
+        BufferedImage inputImage = getInputImage(input);
+        BufferedImage outputImage = processImage(imageDefinition, inputImage);
         
-        BufferedImage thumbnail = processImage(imageDefinition, getInputImage(input));
-        writeImage(thumbnail, getFormatName(input), output);
+        if (outputImage == null || outputImage == inputImage) {
+            return;
+        }
         
-        processingChain.enqueue(imageDefinition);
+        writeImage(outputImage, getFormatName(input), output);
+        processingChain.enqueue(output);
         
         getLog().info(String.format("%s:%s generated", output, width));
     }
 
-    private boolean isFresh(File output, Image imageDefinition) {
+    private boolean isFresh(File output) {
         return output.exists() && 
-                !processingChain.isInQueue(imageDefinition);
+                !processingChain.isInQueue(output);
     }
 
 

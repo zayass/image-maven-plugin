@@ -1,5 +1,6 @@
 package com.filmon.maven;
 
+import java.io.File;
 import java.util.Map;
 
 public class ProcessingChain {
@@ -10,15 +11,15 @@ public class ProcessingChain {
     }
 
     @SuppressWarnings("unchecked")
-    public void enqueue(Image image) {
+    public void enqueue(File image) {
         pluginContext.put(getKey(image), true);
     }
 
-    public boolean isInQueue(Image image) {
+    public boolean isInQueue(File image) {
         return pluginContext.containsKey(getKey(image));
     }
     
-    private String getKey(Image image) {
-        return getClass().getCanonicalName() + image.getSource().getAbsolutePath();
+    private String getKey(File image) {
+        return getClass().getCanonicalName() + image.getAbsolutePath();
     }
 }
